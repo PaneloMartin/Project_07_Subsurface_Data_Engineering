@@ -1,14 +1,26 @@
-# Project 07 | Subsurface Data Engineering
+# 🛢️ Subsurface Data Engineering
+
+## Project 07 – Data Analytics & Scientific Computing Portfolio
 
 ### From LAS well logs to validated, repeatable Snowflake datasets
 
-**Python · Docker · Apache Airflow · Snowflake · dbt**
+![Python: Data Processing](https://img.shields.io/badge/Python-Data%20Processing-4B5563?logo=python&logoColor=white)
+![Docker: Containerization](https://img.shields.io/badge/Docker-Containerization-4B5563?logo=docker&logoColor=white)
+![Apache Airflow: Orchestration](https://img.shields.io/badge/Apache%20Airflow-Orchestration-4B5563?logo=apacheairflow&logoColor=white)
+![Snowflake: Data Warehouse](https://img.shields.io/badge/Snowflake-Data%20Warehouse-4B5563?logo=snowflake&logoColor=white)
+![dbt: Analytical Modeling](https://img.shields.io/badge/dbt-Analytical%20Modeling-4B5563?logo=dbt&logoColor=white)
+![Data Engineering](https://img.shields.io/badge/Data-Engineering-ff7426)
+![Geoscience](https://img.shields.io/badge/Domain-Geoscience-ff7426)
+
+---
 
 ![Subsurface Data Engineering: LAS well logs, Python, Airflow, Snowflake, and dbt](assets/project_cover.png)
 
 *Conceptual project cover; the log curves are illustrative. The implementation and execution boundaries are detailed below.*
 
-## Executive Overview
+---
+
+## 📌 Executive Overview
 
 Subsurface analysis depends on reliable data beneath every interpretation. This project turns geophysical Log ASCII Standard (LAS) files and well catalog metadata into a relational dataset that preserves file provenance, curve definitions, depth measurements, and missing values.
 
@@ -16,7 +28,9 @@ The implemented workflow processes **11 wells, 11 LAS files, 223 curve definitio
 
 The engineering focus is repeatability: validate before publishing, distinguish meaningful changes from formatting differences, and commit related table changes together. The project provides a foundation for energy analytics and subsequent scientific workflows; it does not claim reservoir predictions or production-performance improvements.
 
-## Engineering Problem
+---
+
+## 🎯 Engineering Problem
 
 LAS files contain curves with different descriptions, units, and sampling depths. Catalog metadata and measurements must remain connected without flattening away provenance or treating missing readings as zero.
 
@@ -26,20 +40,9 @@ Three practical challenges shape the implementation:
 - **Data fidelity:** preserve missing readings and original curve units while flagging suspect metadata.
 - **Safe repetition:** prevent duplicate loads and unnecessary updates when the same files are processed again.
 
-## Solution Architecture
+---
 
-```mermaid
-flowchart LR
-    A[Local KGS catalog and LAS files] --> B[Python transformations]
-    B --> C[Four processed CSV datasets]
-    C --> D[Snowflake internal stage]
-    D --> E[Temporary STG tables]
-    E --> F[Counts, NULLs and key validation]
-    F --> G[Dry-run change preview]
-    G --> H[Explicit publication: four MERGEs]
-    H --> I[SUBSURFACE_DB.RAW]
-    I --> J[Separate dbt staging and analytical views]
-```
+## 🏗️ Solution Architecture
 
 **Airflow orchestrates preparation, staging, and validation. RAW publication requires an explicit command.** The dbt models are maintained separately and are not tasks in the current DAG.
 
@@ -57,7 +60,9 @@ flowchart LR
 | dbt | Four staging views, two analytical views, SQL data tests |
 | unittest and SQLite | Offline regression tests and a simulated Snowflake execution adapter |
 
-## Data Sources and Data Model
+---
+
+## 🗂️ Data Sources and Data Model
 
 The local source collection (excluded from Git by `.gitignore`) consists of the **Kansas Geological Survey (KGS)** catalog archive, `data/catalog/ks_las_files.zip`, and 11 LAS files under `data/raw/`. The downloader retains catalog URLs and maps the legacy KGS file prefix to the Azure-hosted download prefix implemented in the source code. See [the downloader](ingestion/download_las.py) and [file metadata transformation](ingestion/build_log_files.py).
 
@@ -72,7 +77,9 @@ The current sample is a local collection, not a representative sample of Kansas 
 
 `WELLS → LOG_FILES → CURVES` preserves the metadata hierarchy. Measurements reference a file and match curve metadata through `(FILE_ID, MNEMONIC)`. The depth index becomes `DEPTH`; it is not an additional measurement curve in the long-format output.
 
-## ETL Pipeline
+---
+
+## 🔄 ETL Pipeline
 
 The [Airflow DAG](airflow/dags/subsurface_pipeline.py) defines:
 
@@ -87,7 +94,9 @@ extract → transform → load → validate
 
 The DAG uses `schedule=None`, `catchup=False`, and a local SequentialExecutor. Its loader invocation supplies no publication flag, so automated runs remain in dry-run mode.
 
-## Data Quality and Validation
+---
+
+## ✅ Data Quality and Validation
 
 Validation covers CSV-to-staging row counts, measurement NULL counts, and non-null, unique business keys in staging and RAW before publication. A separate local relationship check verifies that files have wells, curves have files, and measurements have curve metadata.
 
@@ -103,7 +112,9 @@ The dbt layer adds relationship, not-null, uniqueness, accepted-value, measureme
 
 *Validation scope: record counts are compared between processed CSVs derived from LAS and Snowflake staging. Curve definitions are counted at `(FILE_ID, CURVE_POSITION)` grain, not as distinct mnemonic types. Metadata checks cover keys, relationships, counts, and targeted unit flags; they do not establish scientific validity or harmonize units.*
 
-## Incremental Loading and Idempotency
+---
+
+## 🔁 Incremental Loading and Idempotency
 
 The [publisher](ingestion/load_snowflake.py) matches business keys, inserts missing rows, and updates existing rows only when non-key values differ through NULL-safe `IS DISTINCT FROM` comparisons.
 
@@ -117,7 +128,9 @@ This is **incremental target publication over a full staging reload**, not chang
 
 *The key shown is schematic: MEASUREMENTS matches `(FILE_ID, DEPTH, MNEMONIC)`; the other datasets use the business keys listed above. The 1-insert/3-update synthetic results apply to isolated TESTING tables; RAW's 0/0 results are separate. Both remote results were supplied by the project author, as detailed in the evidence table. Airflow logs cover staging and preview; real publication and remote integration run through explicit commands. Duplicate prevention assumes validated keys and serialized writers.*
 
-## Testing, Reliability, and Evidence
+---
+
+## 🧪 Testing, Reliability, and Evidence
 
 | Result | Evidence available for this README |
 | --- | --- |
@@ -133,7 +146,9 @@ Offline tests cover idempotency, inserts, updates, NULL transitions, LOCATION wh
 
 The [isolated integration harness](tests/snowflake_merge_integration.py) calls the same publisher with eight unique temporary tables in `SUBSURFACE_DB.TESTING`. It logs planned names, checks visible objects for collisions, marks table ownership, and verifies ownership before cleanup. Pending cleanup is reported; connection loss may defer temporary-table removal until the server session ends. It does not read or write RAW or the original CSVs.
 
-## How to Run
+---
+
+## 🚀 How to Run
 
 Run commands from the repository root. Docker Desktop with Compose and a Snowflake account are required for the container workflow. Offline tests need a Python environment with pandas; transformations additionally require lasio.
 
@@ -184,24 +199,40 @@ Integration requires metadata visibility in TESTING and permission to create tha
 
 The dbt project uses the externally configured `subsurface_analytics` profile. Run `dbt build` from `subsurface_analytics/` only after configuring a private Snowflake profile and the intended output schema. It is separate from Docker/Airflow orchestration.
 
-## Repository Guide
+---
+
+## 📁 Repository Structure
 
 ```text
-airflow/                 DAG, Dockerfile, Compose configuration
-data/catalog/            Local KGS catalog archive
-data/raw/                Original LAS files
-data/processed/          Four generated CSV datasets
-ingestion/               Download, inspection, transformation, Snowflake loader
-tests/                   Offline tests, integration harness, execution notes
-subsurface_analytics/    dbt staging views, analytical views, SQL tests
-assets/                  Project cover and three pipeline visualizations
+Project_07_Subsurface_Data_Engineering/
+├── airflow/
+│   ├── dags/subsurface_pipeline.py
+│   ├── Dockerfile
+│   └── docker-compose.yml
+├── assets/                  # four portfolio images
+├── data/                    # local datasets; excluded from Git
+│   ├── catalog/
+│   ├── raw/
+│   └── processed/
+├── ingestion/               # Python preparation and Snowflake publication
+├── subsurface_analytics/    # dbt project
+│   ├── models/
+│   │   ├── staging/
+│   │   └── marts/
+│   ├── tests/
+│   └── dbt_project.yml
+├── tests/                   # offline tests and isolated integration harness
+├── README.md
+└── .gitignore
 ```
 
 Local datasets, logs, credentials, environments, and generated dbt artifacts are excluded by `.gitignore`; sanitized execution evidence remains a separate publication task.
 
 Four images are embedded using repository-relative paths: `project_cover.png`, `pipeline_architecture.png`, `data_quality.png`, and `incremental_loading.png`. Figure notes distinguish verified results from illustrative or unsupported claims. All use charcoal backgrounds, orange accents, warm white headings, and technical gray annotations.
 
-## Key Engineering Outcomes
+---
+
+## 📊 Key Engineering Outcomes
 
 - Converted heterogeneous LAS and catalog data into explicit, traceable relational grains covering **1.4 million measurements**.
 - Preserved **41,655 missing readings** while separating metadata flags from scientific interpretation.
@@ -209,10 +240,22 @@ Four images are embedded using repository-relative paths: `project_cover.png`, `
 - Kept normal Airflow execution in preview mode and exercised publication behavior through a separate synthetic integration path.
 - Added an analytical SQL layer without embedding analytics execution into the ingestion DAG.
 
-## Limitations and Future Improvements
+---
+
+## ⚠️ Limitations and Future Improvements
 
 The current implementation is a local portfolio deployment with a small, non-random well sample. It does not establish production availability, throughput, operating cost, or reservoir-model accuracy.
 
 Priorities for further work are a versioned source manifest and redistribution/license review; reproducible dependency and Snowflake-object provisioning; sanitized, persisted remote execution evidence; CI for offline tests; production-grade scheduling and observability; and schema/type/unit validation beyond the current targeted checks. Repeated curve mnemonics and overlapping file versions need explicit handling before broadening the source collection.
 
 The current transforms regenerate the complete CSV collection, and processing holds one LAS file and its long-format expansion in memory. Larger deployments need measured scaling work. The dbt profile, credentials, and target schema remain environment-specific; historical build artifacts do not guarantee a fresh deployment will reproduce the same results.
+
+---
+
+## 👤 About Me
+
+**Martin Panelo**
+
+Data Analyst | Data Engineer | Geophysicist
+
+[LinkedIn](https://www.linkedin.com/in/martinpanelo/)
