@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: fct_gamma_ray_summary
+    description: "Estadísticas de Gamma Ray por pozo y archivo LAS, conservando la calidad de las unidades originales."
+
+    columns:
+      - name: well_id
+        description: "Identificador del pozo."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_wells')
+                field: well_id
+
+      - name: file_id
+        description: "Identificador del archivo LAS."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: quality_status
+        description: "Estado de calidad de la unidad original."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['OK', 'UNIT_MISSING', 'UNIT_SUSPECT']
+
+      - name: total_measurements
+        description: "Cantidad total de mediciones Gamma Ray."
+
+      - name: valid_measurements
+        description: "Cantidad de mediciones Gamma Ray con valor no nulo."
+
+      - name: avg_gr
+        description: "Promedio de Gamma Ray en la unidad original, sin normalizar."

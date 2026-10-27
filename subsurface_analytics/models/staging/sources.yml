@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: raw
+    database: SUBSURFACE_DB
+    schema: RAW
+    tables:
+      - name: wells
+      - name: log_files
+      - name: curves
+      - name: measurements

@@ -1,0 +1,82 @@
+
+version: 2
+
+models:
+  - name: stg_wells
+    description: "Datos de pozos del Kansas Geological Survey preparados para análisis."
+    columns:
+      - name: well_id
+        description: "Identificador único del pozo en KGS."
+        data_tests:
+          - not_null
+          - unique
+
+  - name: stg_log_files
+    description: "Metadatos de archivos LAS asociados a pozos del KGS."
+    columns:
+      - name: file_id
+        description: "Identificador único del archivo LAS."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: well_id
+        description: "Identificador del pozo asociado al archivo LAS."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_wells')
+                field: well_id
+
+  - name: stg_curves
+    description: "Curvas geofísicas extraídas de archivos LAS del KGS."
+    columns:
+      - name: file_id
+        description: "Archivo LAS al que pertenece la curva."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_log_files')
+                field: file_id
+
+      - name: curve_position
+        description: "Posición de la curva dentro del archivo LAS."
+        data_tests:
+          - not_null
+
+      - name: mnemonic
+        description: "Mnemónico original de la curva."
+        data_tests:
+          - not_null
+
+      - name: quality_status
+        description: "Estado de calidad de la unidad original."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['OK', 'UNIT_MISSING', 'UNIT_SUSPECT']
+
+  - name: stg_measurements
+    description: "Mediciones geofísicas extraídas de archivos LAS del KGS."
+    columns:
+      - name: file_id
+        description: "Archivo LAS del que proviene la medición."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_log_files')
+                field: file_id
+
+      - name: depth
+        description: "Profundidad registrada en el archivo LAS."
+        data_tests:
+          - not_null
+
+      - name: mnemonic
+        description: "Mnemónico de la curva medida."
+        data_tests:
+          - not_null

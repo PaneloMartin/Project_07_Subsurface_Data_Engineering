@@ -1,0 +1,36 @@
+services:
+  airflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: subsurface-airflow:local
+    container_name: subsurface-airflow
+    command: standalone
+
+    ports:
+      - "8081:8080"
+
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/data/airflow.db
+
+      SNOWFLAKE_ACCOUNT: ${SNOWFLAKE_ACCOUNT:?SNOWFLAKE_ACCOUNT no configurada}
+      SNOWFLAKE_USER: ${SNOWFLAKE_USER:?SNOWFLAKE_USER no configurada}
+      SNOWFLAKE_PASSWORD: ${SNOWFLAKE_PASSWORD:?SNOWFLAKE_PASSWORD no configurada}
+      SNOWFLAKE_WAREHOUSE: ${SNOWFLAKE_WAREHOUSE:?SNOWFLAKE_WAREHOUSE no configurada}
+      SNOWFLAKE_DATABASE: ${SNOWFLAKE_DATABASE:?SNOWFLAKE_DATABASE no configurada}
+      SNOWFLAKE_SCHEMA: ${SNOWFLAKE_SCHEMA:?SNOWFLAKE_SCHEMA no configurada}
+      SNOWFLAKE_ROLE: ${SNOWFLAKE_ROLE:?SNOWFLAKE_ROLE no configurada}
+
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+      - airflow_data:/opt/airflow/data
+      - ../:/opt/subsurface_project
+
+    restart: unless-stopped
+
+volumes:
+  airflow_data:

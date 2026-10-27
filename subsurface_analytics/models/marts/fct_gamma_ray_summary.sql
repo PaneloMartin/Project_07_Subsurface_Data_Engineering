@@ -1,0 +1,30 @@
+{{ config(materialized='view') }}
+
+SELECT
+    c.WELL_ID,
+    c.LEASE_NAME,
+    c.FILE_ID,
+    c.ORIGINAL_UNIT,
+    c.QUALITY_STATUS,
+
+    COUNT(*) AS TOTAL_MEASUREMENTS,
+    COUNT(m.MEASUREMENT_VALUE) AS VALID_MEASUREMENTS,
+
+    MIN(m.MEASUREMENT_VALUE) AS MIN_GR,
+    MAX(m.MEASUREMENT_VALUE) AS MAX_GR,
+    AVG(m.MEASUREMENT_VALUE) AS AVG_GR
+
+FROM {{ ref('fct_well_curves') }} AS c
+
+INNER JOIN {{ ref('stg_measurements') }} AS m
+    ON c.FILE_ID = m.FILE_ID
+    AND c.MNEMONIC = m.MNEMONIC
+
+WHERE UPPER(c.MNEMONIC) = 'GR'
+
+GROUP BY
+    c.WELL_ID,
+    c.LEASE_NAME,
+    c.FILE_ID,
+    c.ORIGINAL_UNIT,
+    c.QUALITY_STATUS
