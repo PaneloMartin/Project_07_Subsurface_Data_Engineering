@@ -4,11 +4,11 @@
 
 ### From LAS well logs to validated, repeatable Snowflake datasets
 
-![Python: Data Processing](https://img.shields.io/badge/Python-Data%20Processing-4B5563?logo=python&logoColor=white)
-![Docker: Containerization](https://img.shields.io/badge/Docker-Containerization-4B5563?logo=docker&logoColor=white)
-![Apache Airflow: Orchestration](https://img.shields.io/badge/Apache%20Airflow-Orchestration-4B5563?logo=apacheairflow&logoColor=white)
-![Snowflake: Data Warehouse](https://img.shields.io/badge/Snowflake-Data%20Warehouse-4B5563?logo=snowflake&logoColor=white)
-![dbt: Analytical Modeling](https://img.shields.io/badge/dbt-Analytical%20Modeling-4B5563?logo=dbt&logoColor=white)
+![Python: Data Processing](https://img.shields.io/badge/Python-Data%20Processing-3776AB?logo=python&logoColor=white)
+![Docker: Containerization](https://img.shields.io/badge/Docker-Containerization-2496ED?logo=docker&logoColor=white)
+![Apache Airflow: Orchestration](https://img.shields.io/badge/Apache%20Airflow-Orchestration-008C95?logo=apacheairflow&logoColor=white)
+![Snowflake: Data Warehouse](https://img.shields.io/badge/Snowflake-Data%20Warehouse-29B5E8?logo=snowflake&logoColor=white)
+![dbt: Analytical Modeling](https://img.shields.io/badge/dbt-Analytical%20Modeling-7B42BC?logo=dbt&logoColor=white)
 ![Data Engineering](https://img.shields.io/badge/Data-Engineering-ff7426)
 ![Geoscience](https://img.shields.io/badge/Domain-Geoscience-ff7426)
 
@@ -20,7 +20,7 @@
 
 ---
 
-## 📌 Executive Overview
+## 📌 Project Overview
 
 Subsurface analysis depends on reliable data beneath every interpretation. This project turns geophysical Log ASCII Standard (LAS) files and well catalog metadata into a relational dataset that preserves file provenance, curve definitions, depth measurements, and missing values.
 
